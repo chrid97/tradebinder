@@ -2,8 +2,13 @@
 
 mkdir -p build/
 
-gcc ./src/main.c -g \
-  -I./lib/raylib/include \
-  -L./lib/raylib/lib -Wl,-rpath=./lib/raylib/lib \
-  -lraylib -lGL -lm -lpthread -ldl -lrt -lX11 \
-  -o ./build/tradebinder
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  # macOS settings
+  eval cc ./src/main.c $(pkg-config --libs --cflags raylib) -o ./build/tradebinder
+else
+  gcc ./src/main.c -g \
+    -I./lib/raylib/include \
+    -L./lib/raylib/lib -Wl,-rpath=./lib/raylib/lib \
+    -lraylib -lGL -lm -lpthread -ldl -lrt -lX11 \
+    -o ./build/tradebinder
+fi
