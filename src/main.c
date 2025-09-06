@@ -29,7 +29,7 @@ typedef struct {
 } TileMap;
 
 int TILE_MAP[TILE_COUNT_Y][TILE_COUNT_X] = {
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+    {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
@@ -111,7 +111,13 @@ int main(void) {
                         .tile_width = TILE_WIDTH,
                         .tile_height = TILE_HEIGHT};
 
-    if (is_tilemap_point_empty(&tile_map, new_player_x, new_player_y)) {
+    if (is_tilemap_point_empty(&tile_map, new_player_x, new_player_y) &&
+        is_tilemap_point_empty(&tile_map, new_player_x + player.width,
+                               new_player_y + player.height) &&
+        is_tilemap_point_empty(&tile_map, new_player_x,
+                               new_player_y + player.height) &&
+        is_tilemap_point_empty(&tile_map, new_player_x + player.width,
+                               new_player_y)) {
       player.position.x = new_player_x;
       player.position.y = new_player_y;
     }
