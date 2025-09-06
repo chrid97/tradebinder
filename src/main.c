@@ -7,14 +7,18 @@
 #define VIRTUAL_HEIGHT 450
 #define TILE_WIDTH 50
 #define TILE_HEIGHT 50
-#define TILE_COUNT_X 16
-#define TILE_COUNT_Y 9
+#define TILE_MAP_COUNT_X 16
+#define TILE_MAP_COUNT_Y 9
+
+void test(char *text) {
+  DrawText(text, GetScreenWidth() / 2, GetScreenHeight() / 2, 100, RED);
+}
 
 typedef struct {
   Vector2 position;
   Vector2 velocity;
-  int height;
-  int width;
+  float height;
+  float width;
   char *inventory;
 } Entity;
 
@@ -26,73 +30,71 @@ typedef struct {
   int upper_left_y;
   int tile_width;
   int tile_height;
+
+  int *tiles;
 } TileMap;
 
-int TILE_MAP[TILE_COUNT_Y][TILE_COUNT_X] = {
-    {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+int tiles0[TILE_MAP_COUNT_Y][TILE_MAP_COUNT_X] = {
+    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1},
+};
+int tiles1[TILE_MAP_COUNT_Y][TILE_MAP_COUNT_X] = {
+    {1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+};
+int tiles2[TILE_MAP_COUNT_Y][TILE_MAP_COUNT_X] = {
+    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+};
+int tiles3[TILE_MAP_COUNT_Y][TILE_MAP_COUNT_X] = {
+    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
 };
 
-int TILE_MAP_1[TILE_COUNT_Y][TILE_COUNT_X] = {
-    {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-};
+int GetTileValueUnchecked(TileMap *tile_map, int tile_x, int tile_y) {
+  int tile_map_value = tile_map->tiles[tile_y * TILE_MAP_COUNT_X + tile_x];
+  return tile_map_value;
+}
 
-int TILE_MAP_3[TILE_COUNT_Y][TILE_COUNT_X] = {
-    {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-};
-
-int TILE_MAP_2[TILE_COUNT_Y][TILE_COUNT_X] = {
-    {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-};
-
-TileMap *maps = {TILE_MAP, TILE_MAP_1, TILE_MAP_2, TILE_MAP_3};
-
-bool is_tilemap_point_empty(TileMap *tile_map, int test_x, int test_y) {
+bool is_tilemap_point_empty(TileMap *tile_map, float test_x, float test_y) {
   int player_tile_x = (int)(test_x / tile_map->tile_width);
   int player_tile_y = (int)(test_y / tile_map->tile_height);
 
   if (player_tile_x >= 0 && player_tile_x < tile_map->count_x &&
       player_tile_y >= 0 && player_tile_y < tile_map->count_y) {
-    int tilemap = TILE_MAP[player_tile_y][player_tile_x];
-    return tilemap == 0;
+
+    return GetTileValueUnchecked(tile_map, player_tile_x, player_tile_y) == 0;
   }
 
   return false;
-}
-
-void test(char *text) {
-  DrawText(text, GetScreenWidth() / 2, GetScreenHeight() / 2, 100, RED);
 }
 
 int main(void) {
@@ -141,21 +143,40 @@ int main(void) {
     // ---------------- //
     // ---- Update ---- //
     // ---------------- //
+
+    TileMap tile_maps[2];
+    TileMap tile_map0 = {
+        .count_x = TILE_MAP_COUNT_X,
+        .count_y = TILE_MAP_COUNT_Y,
+        .upper_left_x = -30,
+        .upper_left_y = 0,
+        .tile_width = TILE_WIDTH,
+        .tile_height = TILE_HEIGHT,
+        .tiles = (int *)tiles0,
+    };
+    TileMap tile_map1 = {
+        .count_x = TILE_MAP_COUNT_X,
+        .count_y = TILE_MAP_COUNT_Y,
+        .upper_left_x = -30,
+        .upper_left_y = 0,
+        .tile_width = TILE_WIDTH,
+        .tile_height = TILE_HEIGHT,
+        .tiles = (int *)tiles1,
+    };
+
+    tile_maps[0] = tile_map0;
+    tile_maps[1] = tile_map1;
+    TileMap *tile_map = &tile_maps[0];
+
     float new_player_x = player.position.x + player.velocity.x * dt;
     float new_player_y = player.position.y + player.velocity.y * dt;
 
-    TileMap tile_map = {.count_x = TILE_COUNT_X,
-                        .count_y = TILE_COUNT_Y,
-                        .tile_width = TILE_WIDTH,
-                        .tile_height = TILE_HEIGHT};
+    bool bottom_left = is_tilemap_point_empty(tile_map, new_player_x,
+                                              new_player_y + player.height);
+    bool bottom_right = is_tilemap_point_empty(
+        tile_map, new_player_x + player.width, new_player_y + player.height);
 
-    if (is_tilemap_point_empty(&tile_map, new_player_x, new_player_y) &&
-        is_tilemap_point_empty(&tile_map, new_player_x + player.width,
-                               new_player_y + player.height) &&
-        is_tilemap_point_empty(&tile_map, new_player_x,
-                               new_player_y + player.height) &&
-        is_tilemap_point_empty(&tile_map, new_player_x + player.width,
-                               new_player_y)) {
+    if (bottom_left && bottom_right) {
       player.position.x = new_player_x;
       player.position.y = new_player_y;
     }
@@ -166,9 +187,9 @@ int main(void) {
     BeginDrawing();
     ClearBackground(BLACK);
 
-    for (int y = 0; y < TILE_COUNT_Y; y++) {
-      for (int x = 0; x < TILE_COUNT_X; x++) {
-        int tile = TILE_MAP[y][x];
+    for (int y = 0; y < TILE_MAP_COUNT_Y; y++) {
+      for (int x = 0; x < TILE_MAP_COUNT_X; x++) {
+        int tile = GetTileValueUnchecked(tile_map, x, y);
         if (tile == 1) {
           DrawRectangle(x * TILE_WIDTH, y * TILE_HEIGHT, TILE_WIDTH,
                         TILE_HEIGHT, WHITE);
