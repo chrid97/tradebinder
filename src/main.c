@@ -1,8 +1,8 @@
+#include "main.h"
 #include "raylib.h"
 #include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include <stdio.h>
 
 #define VIRTUAL_WIDTH 800
 #define VIRTUAL_HEIGHT 450
@@ -23,19 +23,7 @@ typedef struct {
   char *inventory;
 } Entity;
 
-typedef struct {
-  int count_x;
-  int count_y;
-
-  int upper_left_x;
-  int upper_left_y;
-  int tile_width;
-  int tile_height;
-
-  int *tiles;
-} TileMap;
-
-int tiles0[TILE_MAP_COUNT_Y][TILE_MAP_COUNT_X] = {
+int tiles_1_0[TILE_MAP_COUNT_Y][TILE_MAP_COUNT_X] = {
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
@@ -44,10 +32,10 @@ int tiles0[TILE_MAP_COUNT_Y][TILE_MAP_COUNT_X] = {
     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1},
+    {1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1},
 };
-int tiles1[TILE_MAP_COUNT_Y][TILE_MAP_COUNT_X] = {
-    {0, 1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 1, 1, 0},
+int tiles_1_1[TILE_MAP_COUNT_Y][TILE_MAP_COUNT_X] = {
+    {0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0},
     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
@@ -57,8 +45,19 @@ int tiles1[TILE_MAP_COUNT_Y][TILE_MAP_COUNT_X] = {
     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 };
-int tiles2[TILE_MAP_COUNT_Y][TILE_MAP_COUNT_X] = {
-    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+int tiles_0_0[TILE_MAP_COUNT_Y][TILE_MAP_COUNT_X] = {
+    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0},
+};
+int tiles_0_1[TILE_MAP_COUNT_Y][TILE_MAP_COUNT_X] = {
+    {1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
@@ -68,17 +67,17 @@ int tiles2[TILE_MAP_COUNT_Y][TILE_MAP_COUNT_X] = {
     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
 };
-int tiles3[TILE_MAP_COUNT_Y][TILE_MAP_COUNT_X] = {
-    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-};
+
+TileMap *get_tile_map(World *world, int tile_map_x, int tile_map_y) {
+  if (tile_map_x >= 0 && tile_map_x <= world->tile_map_count_x &&
+      tile_map_y >= 0 && tile_map_y <= world->tile_map_count_y) {
+    TileMap *tile_map_value =
+        &world->tile_maps[tile_map_y * world->tile_map_count_x + tile_map_x];
+
+    return tile_map_value;
+  }
+  return 0;
+}
 
 int GetTileValueUnchecked(TileMap *tile_map, int tile_x, int tile_y) {
   int tile_map_value = tile_map->tiles[tile_y * TILE_MAP_COUNT_X + tile_x];
@@ -93,6 +92,23 @@ bool is_tilemap_point_door(TileMap *tile_map, float test_x, float test_y) {
       player_tile_y >= 0 && player_tile_y < tile_map->count_y) {
 
     return GetTileValueUnchecked(tile_map, player_tile_x, player_tile_y) == 3;
+  }
+
+  return false;
+}
+
+bool is_world_point_empty(World *world, float tile_map_x, float tile_map_y,
+                          float test_x, float test_y) {
+  TileMap *tile_map = get_tile_map(world, tile_map_x, tile_map_y);
+  if (tile_map) {
+    int player_tile_x = (int)(test_x / tile_map->tile_width);
+    int player_tile_y = (int)(test_y / tile_map->tile_height);
+
+    if (player_tile_x >= 0 && player_tile_x < tile_map->count_x &&
+        player_tile_y >= 0 && player_tile_y < tile_map->count_y) {
+
+      return GetTileValueUnchecked(tile_map, player_tile_x, player_tile_y) == 0;
+    }
   }
 
   return false;
@@ -115,7 +131,12 @@ int main(void) {
   InitWindow(800, 450, "Tradebinder");
   SetTargetFPS(60);
 
-  TileMap tile_maps[2];
+  GameState game_state = {
+      .player_tile_map_x = 0,
+      .player_tile_map_y = 0,
+  };
+
+  TileMap tile_maps[2][2];
   TileMap tile_map0 = {
       .count_x = TILE_MAP_COUNT_X,
       .count_y = TILE_MAP_COUNT_Y,
@@ -123,7 +144,7 @@ int main(void) {
       .upper_left_y = 0,
       .tile_width = TILE_WIDTH,
       .tile_height = TILE_HEIGHT,
-      .tiles = (int *)tiles0,
+      .tiles = (int *)tiles_1_1,
   };
   TileMap tile_map1 = {
       .count_x = TILE_MAP_COUNT_X,
@@ -132,17 +153,13 @@ int main(void) {
       .upper_left_y = 0,
       .tile_width = TILE_WIDTH,
       .tile_height = TILE_HEIGHT,
-      .tiles = (int *)tiles1,
+      .tiles = (int *)tiles_1_0,
   };
 
-  tile_maps[0] = tile_map0;
-  tile_maps[1] = tile_map1;
-  int map_index = 1;
-  TileMap *tile_map = &tile_maps[map_index];
+  tile_maps[0][0] = tile_map0;
+  tile_maps[1][0] = tile_map1;
 
   Entity player = {
-      // .position = {.x = GetScreenWidth() / 2.0f,
-      //              .y = GetScreenHeight() - (GetScreenHeight() / 4.0f)},
       .position = {.x = GetScreenWidth() / 2.0f, .y = GetScreenHeight() / 2.0f},
       .velocity = {.x = 0, .y = 0},
       .height = 32,
@@ -183,6 +200,12 @@ int main(void) {
     // ---- Update ---- //
     // ---------------- //
 
+    World world = {
+        .tile_map_count_x = 2, .tile_map_count_y = 2, .tile_maps = *tile_maps};
+    TileMap *tile_map = get_tile_map(&world, game_state.player_tile_map_x,
+                                     game_state.player_tile_map_y);
+    assert(tile_map);
+
     float new_player_x = player.position.x + player.velocity.x * dt;
     float new_player_y = player.position.y + player.velocity.y * dt;
 
@@ -194,23 +217,6 @@ int main(void) {
     if (bottom_left && bottom_right) {
       player.position.x = new_player_x;
       player.position.y = new_player_y;
-    }
-
-    bool is_door = is_tilemap_point_door(tile_map, new_player_x + player.width,
-                                         new_player_y + player.height);
-
-    if (is_door) {
-      if (map_index == 1) {
-        map_index = 0;
-        tile_map = &tile_maps[map_index];
-        player.position.x = 7 * TILE_HEIGHT;
-        player.position.y = screen_height - TILE_HEIGHT - player.height;
-      } else if (map_index == 0) {
-        map_index = 1;
-        tile_map = &tile_maps[map_index];
-        player.position.x = 7 * TILE_HEIGHT;
-        player.position.y = player.height;
-      }
     }
 
     // ---------------- //
