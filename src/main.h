@@ -1,4 +1,18 @@
 typedef struct {
+
+  int *tiles;
+} TileMap;
+
+typedef struct {
+  int tile_map_x;
+  int tile_map_y;
+
+  float x;
+  float y;
+
+} WorldPosition;
+
+typedef struct {
   int count_x;
   int count_y;
 
@@ -7,10 +21,6 @@ typedef struct {
   int tile_width;
   int tile_height;
 
-  int *tiles;
-} TileMap;
-
-typedef struct {
   int tile_map_count_x;
   int tile_map_count_y;
 
