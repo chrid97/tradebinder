@@ -28,6 +28,28 @@ typedef struct {
 } World;
 
 typedef struct {
+  int tile_map_x;
+  int tile_map_y;
+
+  int tile_x;
+  int tile_y;
+
+  int x;
+  int y;
+} canonical_position;
+
+typedef struct {
+  int tile_map_x;
+  int tile_map_y;
+
+  int tile_x;
+  int tile_y;
+
+  int x;
+  int y;
+} raw_position;
+
+typedef struct {
   int player_tile_map_x;
   int player_tile_map_y;
 } GameState;

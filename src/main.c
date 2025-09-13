@@ -80,7 +80,6 @@ TileMap *get_tile_map(World *world, int tile_map_x, int tile_map_y) {
 }
 
 int GetTileValueUnchecked(TileMap *tile_map, int tile_x, int tile_y) {
-
   int tile_map_value = tile_map->tiles[tile_y * TILE_MAP_COUNT_X + tile_x];
   return tile_map_value;
 }
@@ -110,36 +109,50 @@ bool is_tilemap_point_empty(World *world, TileMap *tile_map, float test_tile_x,
   return false;
 }
 
-WorldPosition get_normalized_position(WorldPosition pos) {
-  int test_tile_x = (int)(test_x / world->tile_width);
-  int test_tile_y = (int)(test_y / world->tile_height);
+canonical_position get_normalized_position(World *world,
+                                           raw_position position) {
+  canonical_position result;
 
-  if (test_tile_x < 0) {
-    test_tile_x = world->count_x + test_tile_x;
-    pos.tile_map_x--;
+  result.tile_map_x = position.tile_map_x;
+  result.tile_map_y = position.tile_map_y;
+
+  float x = position.x - world->upper_left_x;
+  float y = position.y - world->upper_left_y;
+  result.tile_x = (int)(x / world->tile_width);
+  result.tile_y = (int)(y / world->tile_height);
+
+  result.x = x - result.tile_x * world->tile_width;
+  result.y = y - result.tile_y * world->tile_height;
+
+  if (result.tile_x < 0) {
+    result.tile_x = world->count_x + result.tile_x;
+    result.tile_map_x--;
   }
 
-  if (test_tile_y < 0) {
-    test_tile_y = world->count_x + test_tile_y;
-    pos.tile_map_y--;
+  if (result.tile_map_y < 0) {
+    result.tile_map_y = world->count_x + result.tile_y;
+    result.tile_map_y--;
   }
 
-  if (test_tile_x > world->count_x) {
-    test_tile_x = world->count_x - test_tile_x;
-    pos.tile_map_x++;
+  if (result.tile_map_x > world->count_x) {
+    result.tile_map_x = result.tile_map_x - world->count_x;
+    result.tile_map_x++;
   }
 
-  if (test_tile_y > world->count_y) {
-    test_tile_y = world->count_y - test_tile_y;
-    pos.tile_map_y++;
+  if (result.tile_map_y > world->count_y) {
+    result.tile_map_y = result.tile_map_y - world->count_y;
+    result.tile_map_y++;
   }
+
+  return result;
 }
 
-bool is_world_point_empty(World *world, float tile_map_x, float tile_map_y,
-                          float test_x, float test_y) {
-
-  TileMap *tile_map = get_tile_map(world, tile_map_x, tile_map_y);
-  return is_tilemap_point_empty(world, tile_map, test_tile_x, test_tile_y);
+bool is_world_point_empty(World *world, raw_position test_position) {
+  canonical_position can_pos = get_normalized_position(world, test_position);
+  TileMap *tile_map =
+      get_tile_map(world, can_pos.tile_map_x, can_pos.tile_map_y);
+  return is_tilemap_point_empty(world, tile_map, can_pos.tile_x,
+                                can_pos.tile_y);
 }
 
 int main(void) {
@@ -219,13 +232,19 @@ int main(void) {
     float new_player_x = player.position.x + player.velocity.x * dt;
     float new_player_y = player.position.y + player.velocity.y * dt;
 
-    bool bottom_left = is_world_point_empty(
-        &world, game_state.player_tile_map_x, game_state.player_tile_map_y,
-        new_player_x, new_player_y + player.height);
-    bool bottom_right = is_world_point_empty(
-        &world, game_state.player_tile_map_x, game_state.player_tile_map_y,
-        new_player_x + player.width, new_player_y + player.height);
+    raw_position player_position = {.tile_map_x = game_state.player_tile_map_x,
+                                    .tile_map_y = game_state.player_tile_map_y,
+                                    .tile_x = new_player_x,
+                                    .tile_y = new_player_y};
 
+    raw_position player_left = player_position;
+    player_left.y = new_player_y + player.height;
+    raw_position player_right;
+    player_right.x = new_player_y + player.width;
+    player_right.y = new_player_y + player.height;
+
+    bool bottom_left = is_world_point_empty(&world, player_left);
+    bool bottom_right = is_world_point_empty(&world, player_right);
     if (bottom_left && bottom_right) {
       player.position.x = new_player_x;
       player.position.y = new_player_y;
