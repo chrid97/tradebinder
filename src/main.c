@@ -1,6 +1,7 @@
 #include "main.h"
 #include "raylib.h"
 #include <assert.h>
+#include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -58,9 +59,9 @@ int tiles_0_0[TILE_MAP_COUNT_Y][TILE_MAP_COUNT_X] = {
 };
 int tiles_0_1[TILE_MAP_COUNT_Y][TILE_MAP_COUNT_X] = {
     {1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
@@ -84,20 +85,6 @@ int GetTileValueUnchecked(TileMap *tile_map, int tile_x, int tile_y) {
   return tile_map_value;
 }
 
-bool is_tilemap_point_door(World *world, TileMap *tile_map, float test_x,
-                           float test_y) {
-  int player_tile_x = (int)(test_x / world->tile_width);
-  int player_tile_y = (int)(test_y / world->tile_height);
-
-  if (player_tile_x >= 0 && player_tile_x < world->count_x &&
-      player_tile_y >= 0 && player_tile_y < world->count_y) {
-
-    return GetTileValueUnchecked(tile_map, player_tile_x, player_tile_y) == 3;
-  }
-
-  return false;
-}
-
 bool is_tilemap_point_empty(World *world, TileMap *tile_map, float test_tile_x,
                             float test_tile_y) {
   if (tile_map) {
@@ -118,29 +105,28 @@ canonical_position get_normalized_position(World *world,
 
   float x = position.x - world->upper_left_x;
   float y = position.y - world->upper_left_y;
-  result.tile_x = (int)(x / world->tile_width);
-  result.tile_y = (int)(y / world->tile_height);
+  result.tile_x = floorf(x / world->tile_width);
+  result.tile_y = floorf(y / world->tile_height);
 
   result.x = x - result.tile_x * world->tile_width;
   result.y = y - result.tile_y * world->tile_height;
 
   if (result.tile_x < 0) {
-    result.tile_x = world->count_x + result.tile_x;
+    result.tile_x += world->count_x;
     result.tile_map_x--;
   }
-
-  if (result.tile_map_y < 0) {
-    result.tile_map_y = world->count_y + result.tile_y;
+  if (result.tile_y < 0) {
+    result.tile_y += world->count_y;
     result.tile_map_y--;
   }
 
-  if (result.tile_map_x > world->count_x) {
-    result.tile_map_x = result.tile_map_x - world->count_x;
+  if (result.tile_x >= world->count_x) {
+    result.tile_x -= world->count_x;
     result.tile_map_x++;
   }
 
-  if (result.tile_map_y > world->count_y) {
-    result.tile_map_y = result.tile_map_y - world->count_y;
+  if (result.tile_y >= world->count_y) {
+    result.tile_y -= world->count_y;
     result.tile_map_y++;
   }
 
@@ -160,20 +146,28 @@ int main(void) {
   SetTargetFPS(60);
 
   GameState game_state = {
-      .player_tile_map_x = 0,
-      .player_tile_map_y = 0,
+      .player_tile_map_x = 1,
+      .player_tile_map_y = 1,
   };
 
   TileMap tile_maps[2][2];
-  TileMap tile_map0 = {
+  TileMap tile_map11 = {
       .tiles = (int *)tiles_1_1,
   };
-  TileMap tile_map1 = {
+  TileMap tile_map10 = {
       .tiles = (int *)tiles_1_0,
   };
+  TileMap tile_map00 = {
+      .tiles = (int *)tiles_0_0,
+  };
+  TileMap tile_map01 = {
+      .tiles = (int *)tiles_0_1,
+  };
 
-  tile_maps[0][0] = tile_map0;
-  tile_maps[1][0] = tile_map1;
+  tile_maps[0][0] = tile_map00;
+  tile_maps[0][1] = tile_map10;
+  tile_maps[1][1] = tile_map11;
+  tile_maps[1][0] = tile_map01;
 
   Entity player = {
       .position = {.x = GetScreenWidth() / 2.0f, .y = GetScreenHeight() / 2.0f},
@@ -224,13 +218,19 @@ int main(void) {
                    .tile_height = TILE_HEIGHT,
                    .tile_map_count_x = 2,
                    .tile_map_count_y = 2,
-                   .tile_maps = *tile_maps};
+                   .tile_maps = (TileMap *)tile_maps};
+
     TileMap *tile_map = get_tile_map(&world, game_state.player_tile_map_x,
                                      game_state.player_tile_map_y);
     assert(tile_map);
 
     float new_player_x = player.position.x + player.velocity.x * dt;
     float new_player_y = player.position.y + player.velocity.y * dt;
+
+    raw_position player_pos = {.tile_map_x = game_state.player_tile_map_x,
+                               .tile_map_y = game_state.player_tile_map_y,
+                               .x = new_player_x,
+                               .y = new_player_y};
 
     raw_position player_left = {.tile_map_x = game_state.player_tile_map_x,
                                 .tile_map_y = game_state.player_tile_map_y,
@@ -245,8 +245,19 @@ int main(void) {
     bool bottom_left = is_world_point_empty(&world, player_left);
     bool bottom_right = is_world_point_empty(&world, player_right);
     if (bottom_left && bottom_right) {
-      player.position.x = new_player_x;
-      player.position.y = new_player_y;
+      canonical_position can_pos = get_normalized_position(&world, player_pos);
+
+      game_state.player_tile_map_x = can_pos.tile_map_x;
+      game_state.player_tile_map_y = can_pos.tile_map_y;
+
+      player.position.x =
+          world.upper_left_x + world.tile_width * can_pos.tile_x + can_pos.x;
+
+      player.position.y =
+          world.upper_left_y + world.tile_width * can_pos.tile_y + can_pos.y;
+
+      // player.position.x = new_player_x;
+      // player.position.y = new_player_y;
     }
 
     // ---------------- //
