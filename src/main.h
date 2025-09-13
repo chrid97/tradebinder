@@ -42,9 +42,7 @@ typedef struct {
   int tile_map_x;
   int tile_map_y;
 
-  int tile_x;
-  int tile_y;
-
+  // pixel coordinates
   int x;
   int y;
 } raw_position;

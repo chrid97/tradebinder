@@ -8,7 +8,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
 else
   gcc ./src/main.c -g \
     -I./lib/raylib/include \
-    -L./lib/raylib/lib -Wl,-rpath=./lib/raylib/lib \
+    -L./lib/raylib/lib -Wl,-rpath=\$ORIGIN/../lib/raylib/lib \
     -lraylib -lGL -lm -lpthread -ldl -lrt -lX11 \
     -o ./build/tradebinder
 fi

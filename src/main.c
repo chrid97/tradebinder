@@ -130,7 +130,7 @@ canonical_position get_normalized_position(World *world,
   }
 
   if (result.tile_map_y < 0) {
-    result.tile_map_y = world->count_x + result.tile_y;
+    result.tile_map_y = world->count_y + result.tile_y;
     result.tile_map_y--;
   }
 
@@ -232,16 +232,15 @@ int main(void) {
     float new_player_x = player.position.x + player.velocity.x * dt;
     float new_player_y = player.position.y + player.velocity.y * dt;
 
-    raw_position player_position = {.tile_map_x = game_state.player_tile_map_x,
-                                    .tile_map_y = game_state.player_tile_map_y,
-                                    .tile_x = new_player_x,
-                                    .tile_y = new_player_y};
+    raw_position player_left = {.tile_map_x = game_state.player_tile_map_x,
+                                .tile_map_y = game_state.player_tile_map_y,
+                                .x = new_player_x,
+                                .y = new_player_y + player.height};
 
-    raw_position player_left = player_position;
-    player_left.y = new_player_y + player.height;
-    raw_position player_right;
-    player_right.x = new_player_y + player.width;
-    player_right.y = new_player_y + player.height;
+    raw_position player_right = {.tile_map_x = game_state.player_tile_map_x,
+                                 .tile_map_y = game_state.player_tile_map_y,
+                                 .x = new_player_x + player.width,
+                                 .y = new_player_y + player.height};
 
     bool bottom_left = is_world_point_empty(&world, player_left);
     bool bottom_right = is_world_point_empty(&world, player_right);
