@@ -150,6 +150,11 @@ int main(void) {
       .player_tile_map_y = 1,
   };
 
+  // it would be nice if i could just place him on a tile
+  Entity guy = {.height = TILE_HEIGHT,
+                .width = TILE_WIDTH,
+                .position = {.x = 4 * TILE_WIDTH, .y = 3 * TILE_HEIGHT}};
+
   TileMap tile_maps[2][2];
   TileMap tile_map11 = {
       .tiles = (int *)tiles_1_1,
@@ -227,6 +232,13 @@ int main(void) {
     float new_player_x = player.position.x + player.velocity.x * dt;
     float new_player_y = player.position.y + player.velocity.y * dt;
 
+    // i guess this is weird because all i use is tile_map_y and x and I dont
+    // even do any collision detection
+    raw_position guy_pos = {.tile_map_x = 1,
+                            .tile_map_y = 0,
+                            .x = guy.position.x,
+                            .y = guy.position.y};
+
     raw_position player_pos = {.tile_map_x = game_state.player_tile_map_x,
                                .tile_map_y = game_state.player_tile_map_y,
                                .x = new_player_x,
@@ -242,9 +254,24 @@ int main(void) {
                                  .x = new_player_x + player.width,
                                  .y = new_player_y + player.height};
 
+    Rectangle player_rect = {
+        .x = player.position.x,
+        .y = player.position.y,
+        .width = player.width,
+        .height = player.height,
+    };
+
+    Rectangle guy_rect = {
+        .x = guy.position.x,
+        .y = guy.position.y,
+        .width = guy.width,
+        .height = guy.height,
+    };
+
     bool bottom_left = is_world_point_empty(&world, player_left);
     bool bottom_right = is_world_point_empty(&world, player_right);
-    if (bottom_left && bottom_right) {
+    if (bottom_left && bottom_right &&
+        CheckCollisionRecs(player_rect, player_rect)) {
       canonical_position can_pos = get_normalized_position(&world, player_pos);
 
       game_state.player_tile_map_x = can_pos.tile_map_x;
@@ -255,7 +282,6 @@ int main(void) {
 
       player.position.y =
           world.upper_left_y + world.tile_width * can_pos.tile_y + can_pos.y;
-
       // player.position.x = new_player_x;
       // player.position.y = new_player_y;
     }
@@ -283,8 +309,22 @@ int main(void) {
       }
     }
 
+    if (game_state.player_tile_map_x == 1 &&
+        game_state.player_tile_map_y == 0) {
+      DrawRectangle(guy_pos.x, guy_pos.y, guy.width, guy.height, RED);
+    }
+
     DrawRectangle(player.position.x, player.position.y, player.width,
                   player.height, BLUE);
+
+    if (CheckCollisionRecs(player_rect, guy_rect)) {
+      int box_height = 100;
+      DrawRectangle(0, screen_height - box_height, screen_width, 200, BLACK);
+      DrawRectangleLines(0, screen_height - box_height, screen_width, 200,
+                         WHITE);
+      DrawText("Hey do you want to trade?", 0, screen_height - box_height,
+               50 * scale, WHITE);
+    }
 
     EndDrawing();
   }
