@@ -12,6 +12,9 @@
 #define TILE_MAP_COUNT_X 16
 #define TILE_MAP_COUNT_Y 9
 
+#define CARD_HEIGHT 150
+#define CARD_WIDTH 100
+
 void test(char *text) {
   DrawText(text, GetScreenWidth() / 2, GetScreenHeight() / 2, 100, RED);
 }
@@ -148,6 +151,9 @@ int main(void) {
   GameState game_state = {
       .player_tile_map_x = 1,
       .player_tile_map_y = 1,
+      // maybe it would be cool if the first time you boot the game your
+      // inventory is open ?
+      .is_inventory_open = false,
   };
 
   // it would be nice if i could just place him on a tile
@@ -207,6 +213,9 @@ int main(void) {
     }
     if (IsKeyDown(KEY_D)) {
       player.velocity.x = 1.0f;
+    }
+    if (IsKeyPressed(KEY_TAB)) {
+      game_state.is_inventory_open = !game_state.is_inventory_open;
     }
     player.velocity.x *= 150.0f;
     player.velocity.y *= 150.0f;
@@ -324,6 +333,19 @@ int main(void) {
                          WHITE);
       DrawText("Hey do you want to trade?", 0, screen_height - box_height,
                50 * scale, WHITE);
+    }
+
+    // (TODO) When invetory is open game state should be frozen
+    if (game_state.is_inventory_open) {
+      int padding = 20;
+      DrawRectangle(10, 10, screen_width - padding, screen_height - padding,
+                    BROWN);
+
+      for (int y = 10; y < screen_width - padding; y++) {
+        for (int x = 10; x < screen_height - padding; x++) {
+          DrawRectangleLines(x, y, CARD_WIDTH, CARD_HEIGHT, WHITE);
+        }
+      }
     }
 
     EndDrawing();

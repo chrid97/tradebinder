@@ -1,3 +1,4 @@
+#include <stdbool.h>
 typedef struct {
 
   int *tiles;
@@ -50,4 +51,5 @@ typedef struct {
 typedef struct {
   int player_tile_map_x;
   int player_tile_map_y;
+  bool is_inventory_open;
 } GameState;
