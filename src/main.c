@@ -343,7 +343,8 @@ int main(void) {
 
       for (int y = 10; y < screen_width - padding; y++) {
         for (int x = 10; x < screen_height - padding; x++) {
-          DrawRectangleLines(x, y, CARD_WIDTH, CARD_HEIGHT, WHITE);
+          DrawRectangleLines(x + (screen_width * x), y + (screen_height * y),
+                             CARD_WIDTH, CARD_HEIGHT, WHITE);
         }
       }
     }
